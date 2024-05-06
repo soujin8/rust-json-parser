@@ -1,0 +1,11 @@
+{
+  "person": {
+    "name": "John",
+    "age": 30,
+    "car": {
+      "maker": "toyota",
+      "price": 50000000
+    }
+  },
+  "address": "tokyo"
+}
