@@ -16,6 +16,7 @@ pub struct Lexer<'a> {
     chars: std::iter::Peekable<std::str::Chars<'a>>,
 }
 
+#[derive(Debug)]
 pub struct LexerError {
     pub msg: String
 }
@@ -87,7 +88,16 @@ impl<'a> Lexer<'a> {
     }
 
     fn parse_null_token(&mut self) -> Result<Option<Token>, LexerError> {
-        unimplemented!()
+        let s = (0..4).filter_map(|_| self.chars.next()).collect::<String>();
+
+        if s == "null" {
+            Ok(Some(Token::Null))
+        } else {
+            Err(LexerError::new(&format!(
+                "error: a null value is expected {}",
+                s
+            )))
+        }
     }
 
     fn parse_bool_token(&mut self, b: bool) -> Result<Option<Token>, LexerError> {
@@ -107,5 +117,16 @@ impl<'a> Lexer<'a> {
     /// utf16のバッファが存在するならば連結しておく
     fn push_utf16(result: &mut String, utf16: &mut Vec<u16>) -> Result<(), LexerError> {
         unimplemented!()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn test_null() {
+        let null = "null";
+        let tokens = Lexer::new(null).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Null);
     }
 }
