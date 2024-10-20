@@ -55,7 +55,35 @@ impl<'a> Lexer<'a> {
     }
 
     fn next_token(&mut self) -> Result<Option<Token>, LexerError> {
-        unimplemented!()
+        match self.chars.peek() {
+            Some(c) => match c {
+                c if c.is_whitespace() || *c == '\n' => {
+                    Ok(self.next_return_token(Token::WhiteSpace))
+                }
+                '{' => Ok(self.next_return_token(Token::LeftBrace)),
+                '}' => Ok(self.next_return_token(Token::RightBrace)),
+                '[' => Ok(self.next_return_token(Token::LeftBracket)),
+                ']' => Ok(self.next_return_token(Token::RightBracket)),
+                ',' => Ok(self.next_return_token(Token::Comma)),
+                ':' => Ok(self.next_return_token(Token::Colon)),
+
+                '"' => {
+                    self.chars.next();
+                    self.parse_string_token()
+                }
+
+                c if c.is_numeric() || matches!(c, '+' | '-' | '.') => self.parse_number_token(),
+
+                't' => self.parse_bool_token(true),
+
+                'f' => self.parse_bool_token(false),
+
+                'n' => self.parse_null_token(),
+
+                _ => Err(LexerError::new(&format!("error: an unexpected char {}", c))),
+            },
+            None => Ok(None),
+        }
     }
 
     fn parse_null_token(&mut self) -> Result<Option<Token>, LexerError> {
