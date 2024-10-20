@@ -2,6 +2,7 @@
 pub enum Token {
     String(String),
     Number(f64),
+    Bool(bool),
     Null,
     WhiteSpace,
     LeftBrace,
@@ -18,13 +19,13 @@ pub struct Lexer<'a> {
 
 #[derive(Debug)]
 pub struct LexerError {
-    pub msg: String
+    pub msg: String,
 }
 
 impl LexerError {
     fn new(msg: &str) -> LexerError {
         LexerError {
-            msg: msg.to_string()
+            msg: msg.to_string(),
         }
     }
 }
@@ -32,18 +33,16 @@ impl LexerError {
 impl<'a> Lexer<'a> {
     pub fn new(input: &str) -> Lexer {
         Lexer {
-            chars: input.chars().peekable()
+            chars: input.chars().peekable(),
         }
     }
-    
+
     pub fn tokenize(&mut self) -> Result<Vec<Token>, LexerError> {
         let mut tokens = vec![];
         while let Some(token) = self.next_token()? {
             match token {
                 Token::WhiteSpace => {}
-                _ => {
-                    tokens.push(token)
-                }
+                _ => tokens.push(token),
             }
         }
 
@@ -101,7 +100,27 @@ impl<'a> Lexer<'a> {
     }
 
     fn parse_bool_token(&mut self, b: bool) -> Result<Option<Token>, LexerError> {
-        unimplemented!()
+        if b {
+            let s = (0..4).filter_map(|_| self.chars.next()).collect::<String>();
+            if s == "true" {
+                Ok(Some(Token::Bool(true)))
+            } else {
+                Err(LexerError::new(&format!(
+                    "error: a null value is expected {}",
+                    s
+                )))
+            }
+        } else {
+            let s = (0..5).filter_map(|_| self.chars.next()).collect::<String>();
+            if s == "false" {
+                Ok(Some(Token::Bool(false)))
+            } else {
+                Err(LexerError::new(&format!(
+                    "error: a null value is expected {}",
+                    s
+                )))
+            }
+        }
     }
 
     /// 数字として使用可能な文字まで読み込む。読み込んだ文字列が数字(`f64`)としてParseに成功した場合Tokenを返す。
@@ -128,5 +147,15 @@ mod tests {
         let null = "null";
         let tokens = Lexer::new(null).tokenize().unwrap();
         assert_eq!(tokens[0], Token::Null);
+    }
+    #[test]
+    fn test_bool() {
+        let b = "true";
+        let tokens = Lexer::new(b).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Bool(true));
+
+        let b = "false";
+        let tokens = Lexer::new(b).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Bool(false));
     }
 }
