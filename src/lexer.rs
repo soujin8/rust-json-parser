@@ -125,7 +125,20 @@ impl<'a> Lexer<'a> {
 
     /// 数字として使用可能な文字まで読み込む。読み込んだ文字列が数字(`f64`)としてParseに成功した場合Tokenを返す。
     fn parse_number_token(&mut self) -> Result<Option<Token>, LexerError> {
-        unimplemented!()
+        let mut number_str = String::new();
+        while let Some(&c) = self.chars.peek() {
+            if c.is_numeric() | matches!(c, '+' | '-' | 'e' | 'E' | '.') {
+                self.chars.next();
+                number_str.push(c);
+            } else {
+                break;
+            }
+        };
+
+        match number_str.parse::<f64>() {
+            Ok(number) => Ok(Some(Token::Number(number))),
+            Err(e) => Err(LexerError::new(&format!("error: {}", e.to_string()))),
+        }
     }
 
     /// 終端文字'\"'まで文字列を読み込む。UTF-16(\u0000~\uFFFF)や特殊なエスケープ文字(e.g. '\t','\n')も考慮する
@@ -157,5 +170,31 @@ mod tests {
         let b = "false";
         let tokens = Lexer::new(b).tokenize().unwrap();
         assert_eq!(tokens[0], Token::Bool(false));
+    }
+    #[test]
+    fn test_number() {
+        let num = "123456789";
+        let tokens = Lexer::new(num).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Number(123456789.0));
+
+        let num = "+123";
+        let tokens = Lexer::new(num).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Number(123f64));
+
+        let num = "-0.001";
+        let tokens = Lexer::new(num).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Number(-0.001));
+
+        let num = ".001";
+        let tokens = Lexer::new(num).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Number(0.001));
+
+        let num = "1e-10";
+        let tokens = Lexer::new(num).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Number(0.0000000001));
+
+        let num = "+2E10";
+        let tokens = Lexer::new(num).tokenize().unwrap();
+        assert_eq!(tokens[0], Token::Number(20000000000f64));
     }
 }
