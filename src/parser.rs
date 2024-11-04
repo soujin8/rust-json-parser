@@ -147,6 +147,23 @@ mod test {
             Value::String("monkey-json".to_string()),
         );
         assert_eq!(value, Value::Object(object));
+
+        let json = r#"
+        {
+            "key": {
+                "key": false
+            }
+        }
+        "#;
+
+        let value = Parser::new(Lexer::new(json).tokenize().unwrap())
+            .parse()
+            .unwrap();
+        let mut object = BTreeMap::new();
+        let mut nested_object = BTreeMap::new();
+        nested_object.insert("key".to_string(), Value::Bool(false));
+        object.insert("key".to_string(), Value::Object(nested_object));
+        assert_eq!(value, Value::Object(object));
     }
 
     #[test]
