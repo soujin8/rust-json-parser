@@ -23,7 +23,7 @@ impl Parser {
         Parser { tokens, index: 0 }
     }
 
-    fn parse(&mut self) -> Result<Value, ParserError> {
+    pub fn parse(&mut self) -> Result<Value, ParserError> {
         let token = self.peek_expect()?.clone();
         let value = match token {
             Token::LeftBrace => self.parse_object(),
