@@ -68,7 +68,7 @@ impl Parser {
         let token = self.peek_expect()?;
         if *token == Token::RightBracket {
             self.next_expect()?;
-            return Ok(Value::Array(array))
+            return Ok(Value::Array(array));
         }
 
         loop {
@@ -87,7 +87,6 @@ impl Parser {
                         token
                     )))
                 }
-
             }
         }
     }
@@ -201,7 +200,29 @@ mod test {
     }
 
     #[test]
-    fn test_parse_array() {}
+    fn test_parse_array() {
+        let json = r#"[null, 1, true, "monkey-json"]"#;
+        let value = Parser::new(Lexer::new(json).tokenize().unwrap())
+            .parse()
+            .unwrap();
+        let array = Value::Array(vec![
+            Value::Null,
+            Value::Number(1.0),
+            Value::Bool(true),
+            Value::String("monkey-json".to_string()),
+        ]);
+        assert_eq!(value, array);
+
+        let json = r#"[["soujin8", 123]]"#;
+        let value = Parser::new(Lexer::new(json).tokenize().unwrap())
+            .parse()
+            .unwrap();
+        let array = Value::Array(vec![Value::Array(vec![
+            Value::String("soujin8".to_string()),
+            Value::Number(123.0),
+        ])]);
+        assert_eq!(value, array);
+    }
     #[test]
     fn test_parse() {}
 }
