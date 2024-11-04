@@ -55,7 +55,41 @@ impl Parser {
     }
 
     fn parse_array(&mut self) -> Result<Value, ParserError> {
-        todo!()
+        let token = self.peek_expect()?;
+        if *token != Token::LeftBracket {
+            return Err(ParserError::new(&format!(
+                "error: JSON array muse starts [ {:?}",
+                token
+            )));
+        }
+        self.next_expect()?;
+
+        let mut array = vec![];
+        let token = self.peek_expect()?;
+        if *token == Token::RightBracket {
+            self.next_expect()?;
+            return Ok(Value::Array(array))
+        }
+
+        loop {
+            let value = self.parse()?;
+            array.push(value);
+
+            let token = self.next_expect()?;
+            match token {
+                Token::RightBracket => return Ok(Value::Array(array)),
+                Token::Comma => {
+                    continue;
+                }
+                _ => {
+                    return Err(ParserError::new(&format!(
+                        "error: a [ or , token is expected {:?}",
+                        token
+                    )))
+                }
+
+            }
+        }
     }
 
     fn parse_object(&mut self) -> Result<Value, ParserError> {
