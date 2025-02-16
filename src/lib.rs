@@ -1,5 +1,5 @@
-mod parser;
 mod lexer;
+mod parser;
 
 use std::collections::BTreeMap;
 
@@ -19,7 +19,7 @@ pub enum Value {
 pub fn parse(input: &str) -> Result<Value, ParserError> {
     match Lexer::new(input).tokenize() {
         Ok(tokens) => Parser::new(tokens).parse(),
-        Err(e) => Err(ParserError::new(&e.msg))
+        Err(e) => Err(ParserError::new(&e.msg)),
     }
 }
 

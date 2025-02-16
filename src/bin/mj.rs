@@ -7,7 +7,6 @@ use std::{
 
 use rust_json_parser::Value;
 
-
 fn usage() {
     eprintln!("mj - command line JSON minimum prettier");
     eprintln!("USAGE:");
